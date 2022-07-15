@@ -14,6 +14,15 @@ const fs = require('fs')
 const dir = './uploads'
 
 
+process.on('SIGINT', () => {
+    process.exit(0);
+})
+
+
+process.on('SIGTERM', () => {
+    process.exit(0);
+})
+
 function fillFilenames() {
     const files = fs.readdirSync(dir)
     for (const file of files) {
