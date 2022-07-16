@@ -7,3 +7,4 @@ RUN rm package-lock.json
 #VOLUME [ "/app/node_modules" ]
 EXPOSE 8080
 CMD ["node","app.js"]
+
