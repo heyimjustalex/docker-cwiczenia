@@ -1,7 +1,5 @@
 from datetime import timedelta
-import json
 import os
-from winreg import REG_QWORD
 from flask import Flask, redirect, url_for, request
 from datetime import datetime
 from pathlib import Path
@@ -43,13 +41,20 @@ logger = Logger()
 app.secret_key = "secret"
 app.permanent_session_lifetime = timedelta(minutes=5)
 
-client = pymongo.MongoClient("mongodb://localhost:27017")
+print("Trying to connect to MongoDB...")
+# client = pymongo.MongoClient("mongodb://localhost:27017")
+
+client = pymongo.MongoClient("mongodb://my_mongo_container:27017")
+
+print("Connected to MongoDB...")
 dblist = client.list_database_names()
 mydb = client["my_flask_db"]
 mycol = mydb["my-facts"]
-# mycol.insert_one({"fact": "It is my first fact about cat", "length": 22})
-# mycol.insert_one({"fact": "It is my second fact about cat", "length": 23})
-# mycol.insert_one({"fact": "It is my third fact about cat", "length": 24})
+mycol.drop()
+
+mycol.insert_one({"fact": "It is my first fact about cat", "length": 22})
+mycol.insert_one({"fact": "It is my second fact about cat", "length": 23})
+mycol.insert_one({"fact": "It is my third fact about cat", "length": 24})
 
 
 @app.route("/", methods=["GET"])
@@ -102,17 +107,15 @@ def my_facts():
         content_type = request.headers.get("Content-Type")
         if content_type == "application/json":
             json_data = request.get_json()
-            # print(json_data)
-            # dict_data = json.loads(str(json_data))
             try:
                 fact = json_data["fact"]
                 length = json_data["length"]
             except:
-                return "Bad Keys, define body as {'fact':'xxx', 'lenght':'12'}"
+                return "Bad Keys, define body as {'fact':'xxx', 'lenght':'12'}", 400
             temp_dict = {"fact": fact, "length": length}
             mycol.insert_one(temp_dict)
         else:
-            return "Content-Type not supported!"
+            return "Content-Type not supported!", 500
 
         return "Added"
 
